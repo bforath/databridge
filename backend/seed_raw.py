@@ -204,12 +204,10 @@ def main() -> None:
     conn = psycopg2.connect(settings.database_url.replace("+psycopg2", ""))
     cursor = conn.cursor()
 
-    # Clear existing unprocessed raw rows so re-running gives a clean slate.
-    # Already-ingested rows (ingested_at IS NOT NULL) are left untouched.
-    cursor.execute("DELETE FROM raw.warehouse_stock  WHERE ingested_at IS NULL")
-    cursor.execute("DELETE FROM raw.oms_transactions WHERE ingested_at IS NULL")
-    cursor.execute("DELETE FROM raw.wms_inventory  WHERE ingested_at IS NULL")
-    cursor.execute("DELETE FROM raw.crm_customers  WHERE ingested_at IS NULL")
+    # Truncate all raw tables and reset watermarks so re-running gives a clean slate.
+    # Raw tables are treated as read-only source data — we never update rows in place.
+    cursor.execute("TRUNCATE raw.warehouse_stock, raw.oms_transactions, raw.wms_inventory, raw.crm_customers")
+    cursor.execute("TRUNCATE workers.ingestion_watermarks")
     fake.unique.clear()
 
     print("Seeding raw.crm_customers …")

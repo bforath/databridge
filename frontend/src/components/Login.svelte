@@ -6,6 +6,11 @@
   let error: string = ''
   let loading: boolean = false
 
+  function fill(e: string, p: string) {
+    email = e
+    password = p
+  }
+
   async function handleSubmit() {
     error = ''
     loading = true
@@ -138,16 +143,24 @@
       </div>
 
       <div class="mt-6 pt-6 border-t border-surface-100">
-        <p class="text-xs font-semibold text-surface-400 uppercase tracking-wide mb-3">Demo credentials</p>
+        <p class="text-xs font-semibold text-surface-400 uppercase tracking-wide mb-3">Demo credentials — click to fill</p>
         <div class="flex flex-col gap-2">
-          <div class="bg-surface-50 rounded-xl px-4 py-2.5 flex items-center justify-between">
+          <button
+            type="button"
+            on:click={() => fill('admin@databridge.io', 'admin')}
+            class="bg-surface-50 hover:bg-indigo-50 rounded-xl px-4 py-2.5 flex items-center justify-between transition-colors cursor-pointer text-left w-full"
+          >
             <span class="text-xs text-surface-500 font-mono">admin@databridge.io</span>
             <span class="text-xs font-semibold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-md">admin</span>
-          </div>
-          <div class="bg-surface-50 rounded-xl px-4 py-2.5 flex items-center justify-between">
+          </button>
+          <button
+            type="button"
+            on:click={() => fill('demo@databridge.io', 'demo')}
+            class="bg-surface-50 hover:bg-surface-100 rounded-xl px-4 py-2.5 flex items-center justify-between transition-colors cursor-pointer text-left w-full"
+          >
             <span class="text-xs text-surface-500 font-mono">demo@databridge.io</span>
             <span class="text-xs font-semibold text-surface-400 bg-surface-100 px-2 py-0.5 rounded-md">viewer</span>
-          </div>
+          </button>
         </div>
       </div>
     </div>

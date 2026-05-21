@@ -1,23 +1,22 @@
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, Security, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
-from sqlalchemy.orm import Session
 
-from core.database import get_db
+from core.container import get_user_repo
 from core.security import decode_access_token
 from models.user import User
-from repositories.postgres.user import PostgresUserRepository
+from repositories.interfaces.user import UserRepositoryProtocol
 from schemas.enums import Role
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+bearer_scheme = HTTPBearer()
 
 
 def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db),
+    credentials: HTTPAuthorizationCredentials = Security(bearer_scheme),
+    repo: UserRepositoryProtocol = Depends(get_user_repo),
 ) -> User:
     try:
-        payload = decode_access_token(token)
+        payload = decode_access_token(credentials.credentials)
         email = payload.get("sub")
         if not isinstance(email, str) or not email:
             raise ValueError
@@ -27,7 +26,7 @@ def get_current_user(
             detail="Invalid or expired token",
         ) from None
 
-    user = PostgresUserRepository(db).get_by_email(email)
+    user = repo.get_by_email(email)
     if not user or not user.is_active:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found or inactive")
 

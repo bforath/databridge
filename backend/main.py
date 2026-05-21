@@ -8,7 +8,10 @@ import tasks.exports
 import tasks.reports
 import tasks.sweeper  # noqa: F401
 from core.middleware import SecurityHeadersMiddleware
-from routes import auth, customers, jobs, orders, products, reports, stores
+from core.ssm import load_into_settings
+
+load_into_settings()
+from routes import auth, customers, jobs, orders, pipeline, products, reports, stores  # noqa: E402
 
 limiter = Limiter(key_func=get_remote_address)
 
@@ -36,6 +39,7 @@ app.include_router(orders.router, prefix="/orders", tags=["orders"])
 app.include_router(reports.router, prefix="/reports", tags=["reports"])
 app.include_router(jobs.router, prefix="/jobs", tags=["jobs"])
 app.include_router(stores.router, prefix="/stores", tags=["stores"])
+app.include_router(pipeline.router, prefix="/pipeline", tags=["pipeline"])
 
 
 @app.get("/health", tags=["meta"])

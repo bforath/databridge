@@ -12,6 +12,7 @@ slowapi==0.1.9
 celery==5.4.0
 openpyxl==3.1.5
 redis==5.2.1
+boto3==1.35.99
 flower==2.0.1
 # tortoise-orm==0.21.7  # alternative async ORM — swap in via container.py get_connection()
 # asyncpg==0.30.0       # required driver for tortoise-orm with Postgres

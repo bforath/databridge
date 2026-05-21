@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from core.container import get_store_repo
+from core.container import get_store_service
 from core.dependencies import get_current_user
 from models.user import User
-from repositories.interfaces.store import StoreRepositoryProtocol
 from schemas.pagination import Page
 from schemas.store import StoreDetail, StoreSummary
+from services.exceptions import NotFoundError
+from services.store_service import StoreService
 
 router = APIRouter()
 
@@ -17,12 +18,12 @@ def list_stores(
     region: str | None = None,
     search: str | None = None,
     low_stock_only: bool = False,
-    repo: StoreRepositoryProtocol = Depends(get_store_repo),
+    service: StoreService = Depends(get_store_service),
     _: User = Depends(get_current_user),
 ) -> Page[StoreSummary]:
     return Page(
-        items=repo.get_all(skip=skip, limit=limit, region=region, search=search, low_stock_only=low_stock_only),
-        total=repo.count(region=region, search=search, low_stock_only=low_stock_only),
+        items=service.list(skip=skip, limit=limit, region=region, search=search, low_stock_only=low_stock_only),
+        total=service.count(region=region, search=search, low_stock_only=low_stock_only),
         skip=skip,
         limit=limit,
     )
@@ -31,10 +32,10 @@ def list_stores(
 @router.get("/{id}", response_model=StoreDetail)
 def get_store(
     id: int,
-    repo: StoreRepositoryProtocol = Depends(get_store_repo),
+    service: StoreService = Depends(get_store_service),
     _: User = Depends(get_current_user),
 ) -> StoreDetail:
-    store = repo.get_by_id(id)
-    if not store:
-        raise HTTPException(status_code=404, detail="Store not found")
-    return store
+    try:
+        return service.get(id)
+    except NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e

@@ -32,6 +32,11 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       SECRET_KEY: ${SECRET_KEY}
       REDIS_URL: ${REDIS_URL}
+      AWS_ENDPOINT_URL: ${AWS_ENDPOINT_URL:-http://localstack:4566}
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL:-http://localhost:4566}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      MAIL_FROM: ${MAIL_FROM:-noreply@databridge.io}
     volumes:
       - ./backend:/app
     ports:
@@ -54,6 +59,11 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       SECRET_KEY: ${SECRET_KEY}
       REDIS_URL: ${REDIS_URL}
+      AWS_ENDPOINT_URL: ${AWS_ENDPOINT_URL:-http://localstack:4566}
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL:-http://localhost:4566}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      MAIL_FROM: ${MAIL_FROM:-noreply@databridge.io}
     volumes:
       - ./backend:/app
     depends_on:
@@ -62,11 +72,28 @@ services:
       redis:
         condition: service_healthy
 
-  mailhog:
-    image: mailhog/mailhog
+  mailpit:
+    image: axllent/mailpit
     ports:
       - "1025:1025"   # SMTP
       - "8025:8025"   # Web UI
+
+  localstack:
+    image: localstack/localstack:3
+    ports:
+      - "4566:4566"   # LocalStack gateway — all AWS services on one port
+    environment:
+      SERVICES: s3,ssm
+      DEFAULT_REGION: us-east-1
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - ./localstack/init:/etc/localstack/init/ready.d  # runs on startup
+    healthcheck:
+      test: ["CMD-SHELL", "awslocal s3 ls || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
 
   beat:
     build: ./backend
@@ -113,17 +140,19 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
       AIRFLOW__WEBSERVER__SECRET_KEY: airflow-dev-secret-not-for-prod
+      AIRFLOW__API__AUTH_BACKENDS: airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
       AIRFLOW_ADMIN_USERNAME: ${AIRFLOW_ADMIN_USERNAME:-admin}
       AIRFLOW_ADMIN_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD:-admin}
       # Pre-register the app DB as a named connection so DAGs can use
       # PostgresHook(postgres_conn_id='databridge_postgres')
       AIRFLOW_CONN_DATABRIDGE_POSTGRES: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
-      AIRFLOW__SMTP__SMTP_HOST: mailhog
+      AIRFLOW__SMTP__SMTP_HOST: mailpit
       AIRFLOW__SMTP__SMTP_PORT: 1025
       AIRFLOW__SMTP__SMTP_MAIL_FROM: airflow@databridge.io
       AIRFLOW__SMTP__SMTP_SSL: 'false'
       AIRFLOW__SMTP__SMTP_STARTTLS: 'false'
-      AIRFLOW_ALERT_EMAIL: ${AIRFLOW_ALERT_EMAIL}
+      AIRFLOW_ALERT_EMAIL: ${AIRFLOW_ALERT_EMAIL:-airflow-alerts@databridge.io}
+      INGEST_BATCH_SLEEP: ${INGEST_BATCH_SLEEP:-0.5}
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/entrypoint.sh:/opt/airflow/entrypoint.sh
@@ -144,3 +173,4 @@ services:
 volumes:
   postgres_data:
   airflow_logs:
+  localstack_data:

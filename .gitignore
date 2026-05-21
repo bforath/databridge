@@ -6,6 +6,7 @@ __pycache__/
 *.pyo
 .env
 celerybeat-schedule
+**/celerybeat-schedule
 
 # Node
 node_modules/

@@ -47,6 +47,9 @@ source = ["."]
 omit = [
     "tests/*",
     "seed.py",
+    "seed_raw.py",
+    "seed_users.py",
+    "add_raw_batch.py",
     "alembic/*",
     "tasks/sync.py",
     "tasks/sweeper.py",
@@ -54,6 +57,7 @@ omit = [
     "tasks/reports.py",
     "core/mail.py",
     "mailers/smtp.py",
+    "repositories/tortoise/*",
 ]
 
 [tool.coverage.report]

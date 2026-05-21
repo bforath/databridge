@@ -8,9 +8,10 @@
   import Products from './components/pages/Products.svelte'
   import Orders from './components/pages/Orders.svelte'
   import Jobs from './components/pages/Jobs.svelte'
+  import Pipeline from './components/pages/Pipeline.svelte'
   import Stores from './components/pages/Stores.svelte'
 
-  type PageKey = 'dashboard' | 'customers' | 'products' | 'orders' | 'jobs' | 'stores'
+  type PageKey = 'dashboard' | 'customers' | 'products' | 'orders' | 'jobs' | 'stores' | 'pipeline'
 
   let currentPage: PageKey = 'dashboard'
 
@@ -20,6 +21,7 @@
     products: Products,
     orders: Orders,
     jobs: Jobs,
+    pipeline: Pipeline,
     stores: Stores,
   }
 </script>
