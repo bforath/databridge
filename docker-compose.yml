@@ -79,13 +79,12 @@ services:
       - "8025:8025"   # Web UI
 
   localstack:
-    image: localstack/localstack
+    image: localstack/localstack:3
     ports:
       - "4566:4566"   # LocalStack gateway — all AWS services on one port
     environment:
-      SERVICES: s3,ses,ssm
+      SERVICES: s3,ssm
       DEFAULT_REGION: us-east-1
-      LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN:-}
     volumes:
       - localstack_data:/var/lib/localstack
       - ./localstack/init:/etc/localstack/init/ready.d  # runs on startup
@@ -152,7 +151,7 @@ services:
       AIRFLOW__SMTP__SMTP_MAIL_FROM: airflow@databridge.io
       AIRFLOW__SMTP__SMTP_SSL: 'false'
       AIRFLOW__SMTP__SMTP_STARTTLS: 'false'
-      AIRFLOW_ALERT_EMAIL: ${AIRFLOW_ALERT_EMAIL}
+      AIRFLOW_ALERT_EMAIL: ${AIRFLOW_ALERT_EMAIL:-airflow-alerts@databridge.io}
       INGEST_BATCH_SLEEP: ${INGEST_BATCH_SLEEP:-0.5}
     volumes:
       - ./airflow/dags:/opt/airflow/dags

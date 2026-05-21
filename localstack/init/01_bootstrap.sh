@@ -11,7 +11,4 @@ awslocal ssm put-parameter --name "/databridge/SECRET_KEY"   --value "dev-secret
 awslocal ssm put-parameter --name "/databridge/DATABASE_URL" --value "postgresql://databridge:databridge@db/databridge" --type SecureString --overwrite
 awslocal ssm put-parameter --name "/databridge/REDIS_URL"    --value "redis://redis:6379/0" --type SecureString --overwrite
 
-echo "Verifying SES identity..."
-awslocal ses verify-email-identity --email-address noreply@databridge.io
-
 echo "LocalStack bootstrap complete."
